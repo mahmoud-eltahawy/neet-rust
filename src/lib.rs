@@ -29,9 +29,14 @@ mod tests {
 
     #[test]
     fn prefix_sum_test() {
-        let ps = PrefixSum::from(vec![1, 2, 3, 4]);
-        assert_eq!(ps.list, vec![1, 3, 6, 10]);
+        let list = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        let ps = PrefixSum::from(list);
 
         assert_eq!(ps.from_to(1, 3), 9);
+        assert_eq!(ps.from_to(2, 5), 18);
+        assert_eq!(ps.from_to(7, 9), 27);
+
+        let PrefixSum { list } = ps;
+        assert_eq!(list, vec![1, 3, 6, 10, 15, 21, 28, 36, 45, 55]);
     }
 }
