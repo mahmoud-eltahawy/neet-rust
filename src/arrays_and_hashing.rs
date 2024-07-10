@@ -4,13 +4,8 @@ pub struct Solution;
 
 impl Solution {
     pub fn contains_duplicate(nums: Vec<i32>) -> bool {
-        let mut set = HashSet::with_capacity(nums.len());
-        for num in nums {
-            if !set.insert(num) {
-                return true;
-            };
-        }
-        false
+        let mut exists = HashSet::with_capacity(nums.len());
+        !nums.into_iter().all(|x| exists.insert(x))
     }
 }
 
