@@ -1,5 +1,9 @@
 use std::ops::{Add, Sub};
 
+mod arrays_and_hashing;
+
+pub use arrays_and_hashing::*;
+
 pub struct PrefixSum<T: Add<Output = T> + Sub<Output = T> + Clone> {
     list: Vec<T>,
 }
