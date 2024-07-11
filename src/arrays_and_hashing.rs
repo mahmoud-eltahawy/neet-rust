@@ -286,11 +286,11 @@ mod tests {
     }
     #[test]
     pub fn is_valid_sodoku() {
-        assert_eq!(SodokuClass::from('a', 2), SodokuClass::from('a', 11));
-        assert_eq!(SodokuClass::from('a', 2), SodokuClass::from('a', 7));
-        assert_eq!(SodokuClass::from('a', 2), SodokuClass::from('a', 1));
+        assert_eq!(SodokuClass::from('a', 2), SodokuClass::from('a', 11)); //same column
+        assert_eq!(SodokuClass::from('a', 2), SodokuClass::from('a', 7)); //same row
+        assert_eq!(SodokuClass::from('a', 2), SodokuClass::from('a', 20)); //same area
 
-        assert_ne!(SodokuClass::from('a', 2), SodokuClass::from('a', 15));
+        assert_ne!(SodokuClass::from('a', 2), SodokuClass::from('a', 15)); //different rwo,column,area
 
         assert!(Solution::is_valid_sodoku(vec![
             vec!['5', '3', '.', '.', '7', '.', '.', '.', '.'],
