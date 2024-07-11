@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 pub struct Solution;
 
@@ -17,6 +17,18 @@ impl Solution {
         let mut t = t.into_bytes();
         t.sort_unstable();
         s == t
+    }
+
+    pub fn two_sum(nums: Vec<i32>, target: i32) -> Vec<i32> {
+        let mut map = HashMap::<i32, i32>::with_capacity(nums.len());
+        for (index, &num) in nums.iter().enumerate() {
+            let diff = target - num;
+            if let Some(x) = map.get(&diff) {
+                return vec![*x, index as i32];
+            }
+            map.insert(num, index as i32);
+        }
+        unreachable!()
     }
 }
 
@@ -43,5 +55,13 @@ mod tests {
             Solution::is_anagram("rat".to_string(), "car".to_string()),
             false
         )
+    }
+
+    #[test]
+    pub fn two_sum() {
+        assert_eq!(Solution::two_sum(vec![2, 7, 11, 15], 9), vec![0, 1]);
+        assert_eq!(Solution::two_sum(vec![3, 2, 4], 6), vec![1, 2]);
+        assert_eq!(Solution::two_sum(vec![3, 3], 6), vec![0, 1]);
+        assert_eq!(Solution::two_sum(vec![3, 2, 3], 6), vec![0, 2]);
     }
 }
