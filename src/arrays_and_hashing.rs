@@ -50,13 +50,8 @@ impl Solution {
 
     pub fn top_k_frequent(nums: Vec<i32>, k: i32) -> Vec<i32> {
         let mut map = HashMap::<i32, i32>::new();
-        for num in nums.into_iter() {
-            match map.get_mut(&num) {
-                Some(x) => *x += 1,
-                None => {
-                    map.insert(num, 1);
-                }
-            }
+        for num in nums {
+            map.entry(num).and_modify(|freq| *freq += 1).or_insert(1);
         }
         let mut xs = map.into_iter().collect::<Vec<_>>();
         xs.sort_unstable_by(|(_, x), (_, y)| y.cmp(x));
