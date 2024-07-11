@@ -67,6 +67,60 @@ impl Solution {
     pub fn decode(string: String) -> Vec<String> {
         string.split("#").map(|x| x.to_string()).collect()
     }
+
+    pub fn product_except_self(nums: Vec<i32>) -> Vec<i32> {
+        let state = ProductExeceptSelfState::from(&nums);
+        match state {
+            ProductExeceptSelfState::SomeZeros => vec![0; nums.len()],
+            ProductExeceptSelfState::SingleZero(non_zero_product) => nums
+                .into_iter()
+                .map(|x| if x == 0 { non_zero_product } else { 0 })
+                .collect(),
+            ProductExeceptSelfState::NoZero(all_product) => {
+                nums.into_iter().map(|x| all_product / x).collect()
+            }
+        }
+    }
+}
+
+enum ProductExeceptSelfState {
+    NoZero(i32),
+    SingleZero(i32),
+    SomeZeros,
+}
+
+impl ProductExeceptSelfState {
+    fn from(nums: &[i32]) -> Self {
+        let mut all_product = 1;
+        let mut non_zero_product = 1;
+        let mut state = ProductExeceptSelfState::NoZero(1);
+        for num in nums.iter() {
+            if num == &0 {
+                match state {
+                    ProductExeceptSelfState::NoZero(_) => {
+                        state = ProductExeceptSelfState::SingleZero(1)
+                    }
+                    ProductExeceptSelfState::SingleZero(_) => {
+                        state = ProductExeceptSelfState::SomeZeros
+                    }
+                    ProductExeceptSelfState::SomeZeros => (),
+                }
+            } else {
+                non_zero_product *= num;
+            }
+            all_product *= num;
+        }
+        match &mut state {
+            ProductExeceptSelfState::NoZero(num) => {
+                *num = all_product;
+            }
+            ProductExeceptSelfState::SingleZero(num) => {
+                *num = non_zero_product;
+            }
+            ProductExeceptSelfState::SomeZeros => (),
+        }
+        state
+    }
 }
 
 #[cfg(test)]
@@ -160,5 +214,20 @@ mod tests {
             "solving".to_string(),
         ];
         assert_eq!(Solution::decode(Solution::encode(&strings)), strings)
+    }
+    #[test]
+    pub fn product_except_self() {
+        assert_eq!(
+            Solution::product_except_self(vec![1, 2, 3, 4]),
+            vec![24, 12, 8, 6]
+        );
+
+        assert_eq!(
+            Solution::product_except_self(vec![-1, 1, 0, -3, 3]),
+            vec![0, 0, 9, 0, 0]
+        );
+
+        assert_eq!(Solution::product_except_self(vec![0, 0]), vec![0, 0]);
+        assert_eq!(Solution::product_except_self(vec![0, 4, 0]), vec![0, 0, 0]);
     }
 }
