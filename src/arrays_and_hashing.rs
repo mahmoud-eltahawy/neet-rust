@@ -72,6 +72,58 @@ impl Solution {
         let state = ProductExeceptSelfState::from(nums);
         state.get()
     }
+
+    pub fn is_valid_sodoku(board: Vec<Vec<char>>) -> bool {
+        let mut set = HashSet::with_capacity(81);
+        !board
+            .into_iter()
+            .flatten()
+            .enumerate()
+            .filter(|x| x.1 != '.')
+            .map(|(index, letter)| SodokuClass::from(letter, index + 1))
+            .any(|x| !set.insert(x))
+    }
+}
+
+#[derive(Debug, Eq, Hash)]
+struct SodokuClass {
+    row: usize,
+    column: usize,
+    area: usize,
+    char: char,
+}
+
+impl PartialEq for SodokuClass {
+    fn eq(&self, other: &Self) -> bool {
+        self.char == other.char
+            && (self.column == other.column || self.row == other.row || self.area == other.area)
+    }
+}
+
+impl SodokuClass {
+    fn from(char: char, index: usize) -> Self {
+        let column = index % 9;
+        let row = (index - column) / 9;
+        let area = match (row, column) {
+            (0..=2, 0..=2) => 1,
+            (3..=5, 3..=5) => 2,
+            (6..=9, 6..=8) => 3,
+            (0..=2, 3..=5) => 4,
+            (0..=2, 6..=8) => 5,
+            (3..=5, 0..=2) => 6,
+            (3..=5, 6..=8) => 7,
+            (6..=9, 0..=2) => 8,
+            (6..=9, 3..=5) => 9,
+            _ => unreachable!(),
+        };
+
+        Self {
+            row,
+            column,
+            area,
+            char,
+        }
+    }
 }
 
 enum ProductExeceptSelfState {
@@ -127,7 +179,7 @@ impl ProductExeceptSelfState {
 
 #[cfg(test)]
 mod tests {
-    use crate::Solution;
+    use crate::{arrays_and_hashing::SodokuClass, Solution};
 
     #[test]
     pub fn contains_duplicate() {
@@ -231,5 +283,47 @@ mod tests {
 
         assert_eq!(Solution::product_except_self(vec![0, 0]), vec![0, 0]);
         assert_eq!(Solution::product_except_self(vec![0, 4, 0]), vec![0, 0, 0]);
+    }
+    #[test]
+    pub fn is_valid_sodoku() {
+        assert_eq!(SodokuClass::from('a', 2), SodokuClass::from('a', 11));
+        assert_eq!(SodokuClass::from('a', 2), SodokuClass::from('a', 7));
+        assert_eq!(SodokuClass::from('a', 2), SodokuClass::from('a', 1));
+
+        assert!(Solution::is_valid_sodoku(vec![
+            vec!['5', '3', '.', '.', '7', '.', '.', '.', '.'],
+            vec!['6', '.', '.', '1', '9', '5', '.', '.', '.'],
+            vec!['.', '9', '8', '.', '.', '.', '.', '6', '.'],
+            vec!['8', '.', '.', '.', '6', '.', '.', '.', '3'],
+            vec!['4', '.', '.', '8', '.', '3', '.', '.', '1'],
+            vec!['7', '.', '.', '.', '2', '.', '.', '.', '6'],
+            vec!['.', '6', '.', '.', '.', '.', '2', '8', '.'],
+            vec!['.', '.', '.', '4', '1', '9', '.', '.', '5'],
+            vec!['.', '.', '.', '.', '8', '.', '.', '7', '9'],
+        ]));
+
+        assert!(!Solution::is_valid_sodoku(vec![
+            vec!['8', '3', '.', '.', '7', '.', '.', '.', '.'],
+            vec!['6', '.', '.', '1', '9', '5', '.', '.', '.'],
+            vec!['.', '9', '8', '.', '.', '.', '.', '6', '.'],
+            vec!['8', '.', '.', '.', '6', '.', '.', '.', '3'],
+            vec!['4', '.', '.', '8', '.', '3', '.', '.', '1'],
+            vec!['7', '.', '.', '.', '2', '.', '.', '.', '6'],
+            vec!['.', '6', '.', '.', '.', '.', '2', '8', '.'],
+            vec!['.', '.', '.', '4', '1', '9', '.', '.', '5'],
+            vec!['.', '.', '.', '.', '8', '.', '.', '7', '9']
+        ]));
+
+        assert!(!Solution::is_valid_sodoku(vec![
+            vec!['.', '.', '4', '.', '.', '.', '6', '3', '.'],
+            vec!['.', '.', '.', '.', '.', '.', '.', '.', '.'],
+            vec!['5', '.', '.', '.', '.', '.', '.', '9', '.'],
+            vec!['.', '.', '.', '5', '6', '.', '.', '.', '.'],
+            vec!['4', '.', '3', '.', '.', '.', '.', '.', '1'],
+            vec!['.', '.', '.', '7', '.', '.', '.', '.', '.'],
+            vec!['.', '.', '.', '5', '.', '.', '.', '.', '.'],
+            vec!['.', '.', '.', '.', '.', '.', '.', '.', '.'],
+            vec!['.', '.', '.', '.', '.', '.', '.', '.', '.']
+        ]));
     }
 }
