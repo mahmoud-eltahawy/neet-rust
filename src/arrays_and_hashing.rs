@@ -30,6 +30,24 @@ impl Solution {
         }
         unreachable!()
     }
+
+    pub fn group_anagrams(strs: Vec<String>) -> Vec<Vec<String>> {
+        let mut map = HashMap::<String, Vec<String>>::new();
+
+        for word in strs {
+            let mut sorted_word = word.chars().collect::<Vec<_>>();
+            sorted_word.sort_unstable();
+            let sorted_word = sorted_word.into_iter().collect::<String>();
+            match map.get_mut(&sorted_word) {
+                Some(arr) => arr.push(word),
+                None => {
+                    map.insert(sorted_word, vec![word]);
+                }
+            }
+        }
+
+        map.values().cloned().collect()
+    }
 }
 
 #[cfg(test)]
@@ -63,5 +81,46 @@ mod tests {
         assert_eq!(Solution::two_sum(vec![3, 2, 4], 6), vec![1, 2]);
         assert_eq!(Solution::two_sum(vec![3, 3], 6), vec![0, 1]);
         assert_eq!(Solution::two_sum(vec![3, 2, 3], 6), vec![0, 2]);
+    }
+
+    #[test]
+    pub fn group_anagram() {
+        assert_eq!(
+            Solution::group_anagrams(vec!["".to_string(),]),
+            vec![vec![""]]
+        );
+        assert_eq!(
+            Solution::group_anagrams(vec!["a".to_string(),]),
+            vec![vec!["a"]]
+        );
+
+        let sort_it = |arr: Vec<Vec<_>>| {
+            let mut arr = arr
+                .into_iter()
+                .map(|xs| {
+                    let mut xs = xs;
+                    xs.sort_unstable();
+                    xs
+                })
+                .collect::<Vec<_>>();
+            arr.sort_unstable();
+            arr
+        };
+
+        assert_eq!(
+            sort_it(Solution::group_anagrams(vec![
+                "eat".to_string(),
+                "tea".to_string(),
+                "tan".to_string(),
+                "ate".to_string(),
+                "nat".to_string(),
+                "bat".to_string()
+            ])),
+            sort_it(vec![
+                vec!["bat".to_string()],
+                vec!["nat".to_string(), "tan".to_string()],
+                vec!["ate".to_string(), "eat".to_string(), "tea".to_string()]
+            ])
+        );
     }
 }
