@@ -32,12 +32,11 @@ impl Solution {
     }
 
     pub fn group_anagrams(strs: Vec<String>) -> Vec<Vec<String>> {
-        let mut map = HashMap::<String, Vec<String>>::new();
+        let mut map = HashMap::<Vec<char>, Vec<String>>::new();
 
         for word in strs {
             let mut sorted_word = word.chars().collect::<Vec<_>>();
             sorted_word.sort_unstable();
-            let sorted_word = sorted_word.into_iter().collect::<String>();
             match map.get_mut(&sorted_word) {
                 Some(arr) => arr.push(word),
                 None => {
