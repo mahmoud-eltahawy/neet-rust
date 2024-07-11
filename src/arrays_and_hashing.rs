@@ -290,6 +290,8 @@ mod tests {
         assert_eq!(SodokuClass::from('a', 2), SodokuClass::from('a', 7));
         assert_eq!(SodokuClass::from('a', 2), SodokuClass::from('a', 1));
 
+        assert_ne!(SodokuClass::from('a', 2), SodokuClass::from('a', 15));
+
         assert!(Solution::is_valid_sodoku(vec![
             vec!['5', '3', '.', '.', '7', '.', '.', '.', '.'],
             vec!['6', '.', '.', '1', '9', '5', '.', '.', '.'],
