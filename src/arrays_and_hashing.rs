@@ -60,6 +60,13 @@ impl Solution {
             .map(|(x, _)| x)
             .collect::<Vec<_>>()
     }
+
+    pub fn encode(strs: &Vec<String>) -> String {
+        strs.join("#")
+    }
+    pub fn decode(string: String) -> Vec<String> {
+        string.split("#").map(|x| x.to_string()).collect()
+    }
 }
 
 #[cfg(test)]
@@ -143,5 +150,15 @@ mod tests {
         );
         assert_eq!(Solution::top_k_frequent(vec![100], 1), vec![100]);
         assert_eq!(Solution::top_k_frequent(vec![-1], -1), vec![-1]);
+    }
+    #[test]
+    pub fn encode_decode() {
+        let strings = vec![
+            "i".to_string(),
+            "love".to_string(),
+            "problem".to_string(),
+            "solving".to_string(),
+        ];
+        assert_eq!(Solution::decode(Solution::encode(&strings)), strings)
     }
 }
