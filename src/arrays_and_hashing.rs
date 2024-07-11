@@ -61,65 +61,67 @@ impl Solution {
             .collect::<Vec<_>>()
     }
 
-    pub fn encode(strs: &Vec<String>) -> String {
+    pub fn encode(strs: &[String]) -> String {
         strs.join("#")
     }
     pub fn decode(string: String) -> Vec<String> {
-        string.split("#").map(|x| x.to_string()).collect()
+        string.split('#').map(|x| x.to_string()).collect()
     }
 
     pub fn product_except_self(nums: Vec<i32>) -> Vec<i32> {
-        let state = ProductExeceptSelfState::from(&nums);
-        match state {
-            ProductExeceptSelfState::SomeZeros => vec![0; nums.len()],
-            ProductExeceptSelfState::SingleZero(non_zero_product) => nums
-                .into_iter()
-                .map(|x| if x == 0 { non_zero_product } else { 0 })
-                .collect(),
-            ProductExeceptSelfState::NoZero(all_product) => {
-                nums.into_iter().map(|x| all_product / x).collect()
-            }
-        }
+        let state = ProductExeceptSelfState::from(nums);
+        state.get()
     }
 }
 
 enum ProductExeceptSelfState {
-    NoZero(i32),
-    SingleZero(i32),
-    SomeZeros,
+    NoZero(Vec<i32>, i32),
+    SingleZero(usize, usize, i32),
+    SomeZeros(usize),
 }
 
 impl ProductExeceptSelfState {
-    fn from(nums: &[i32]) -> Self {
+    fn from(nums: Vec<i32>) -> Self {
+        enum Assume {
+            NoZero,
+            SingleZero(usize, usize),
+            SomeZeros(usize),
+        }
         let mut all_product = 1;
         let mut non_zero_product = 1;
-        let mut state = ProductExeceptSelfState::NoZero(1);
-        for num in nums.iter() {
+        let mut state = Assume::NoZero;
+        for (index, num) in nums.iter().enumerate() {
             if num == &0 {
                 match state {
-                    ProductExeceptSelfState::NoZero(_) => {
-                        state = ProductExeceptSelfState::SingleZero(1)
-                    }
-                    ProductExeceptSelfState::SingleZero(_) => {
-                        state = ProductExeceptSelfState::SomeZeros
-                    }
-                    ProductExeceptSelfState::SomeZeros => (),
+                    Assume::SomeZeros(_) => (),
+                    Assume::SingleZero(_, _) => state = Assume::SomeZeros(nums.len()),
+                    Assume::NoZero => state = Assume::SingleZero(index, nums.len()),
                 }
             } else {
                 non_zero_product *= num;
             }
             all_product *= num;
         }
-        match &mut state {
-            ProductExeceptSelfState::NoZero(num) => {
-                *num = all_product;
+        match state {
+            Assume::NoZero => ProductExeceptSelfState::NoZero(nums, all_product),
+            Assume::SingleZero(index, len) => {
+                ProductExeceptSelfState::SingleZero(index, len, non_zero_product)
             }
-            ProductExeceptSelfState::SingleZero(num) => {
-                *num = non_zero_product;
-            }
-            ProductExeceptSelfState::SomeZeros => (),
+            Assume::SomeZeros(len) => ProductExeceptSelfState::SomeZeros(len),
         }
-        state
+    }
+    fn get(self) -> Vec<i32> {
+        match self {
+            ProductExeceptSelfState::SomeZeros(len) => vec![0; len],
+            ProductExeceptSelfState::SingleZero(index, len, non_zero_product) => {
+                let mut arr = vec![0; len];
+                arr[index] = non_zero_product;
+                arr
+            }
+            ProductExeceptSelfState::NoZero(nums, all_product) => {
+                nums.into_iter().map(|x| all_product / x).collect()
+            }
+        }
     }
 }
 
