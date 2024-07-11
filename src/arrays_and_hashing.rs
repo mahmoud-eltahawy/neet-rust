@@ -47,6 +47,24 @@ impl Solution {
 
         map.values().cloned().collect()
     }
+
+    pub fn top_k_frequent(nums: Vec<i32>, k: i32) -> Vec<i32> {
+        let mut map = HashMap::<i32, i32>::new();
+        for num in nums.into_iter() {
+            match map.get_mut(&num) {
+                Some(x) => *x += 1,
+                None => {
+                    map.insert(num, 1);
+                }
+            }
+        }
+        let mut xs = map.into_iter().collect::<Vec<_>>();
+        xs.sort_unstable_by(|(_, x), (_, y)| y.cmp(x));
+        xs.into_iter()
+            .take(k as usize)
+            .map(|(x, _)| x)
+            .collect::<Vec<_>>()
+    }
 }
 
 #[cfg(test)]
@@ -121,5 +139,14 @@ mod tests {
                 vec!["ate".to_string(), "eat".to_string(), "tea".to_string()]
             ])
         );
+    }
+    #[test]
+    pub fn top_k_fequent_element() {
+        assert_eq!(
+            Solution::top_k_frequent(vec![100, 100, 100, 200, 200, 300], 2),
+            vec![100, 200]
+        );
+        assert_eq!(Solution::top_k_frequent(vec![100], 1), vec![100]);
+        assert_eq!(Solution::top_k_frequent(vec![-1], -1), vec![-1]);
     }
 }
