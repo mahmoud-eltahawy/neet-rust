@@ -74,55 +74,87 @@ impl Solution {
     }
 
     pub fn is_valid_sodoku(board: Vec<Vec<char>>) -> bool {
-        let mut set = HashSet::with_capacity(81);
+        let mut map = HashMap::<char, Sodoku>::with_capacity(9);
         !board
             .into_iter()
-            .flatten()
             .enumerate()
-            .filter(|x| x.1 != '.')
-            .map(|(index, letter)| SodokuClass::from(letter, index + 1))
-            .any(|x| !set.insert(x))
+            .map(|(y, row)| {
+                row.into_iter()
+                    .enumerate()
+                    .filter(|(_, x)| *x != '.')
+                    .map(|(x, letter)| (letter, SodokuElement::from(y, x)))
+                    .collect::<Vec<_>>()
+            })
+            .flatten()
+            .any(|(letter, element)| {
+                match map.get_mut(&letter) {
+                    Some(sodokus) => {
+                        if sodokus.exists(element) {
+                            return true;
+                        };
+                    }
+                    None => {
+                        map.insert(letter, Sodoku::new(element));
+                    }
+                };
+                false
+            })
     }
 }
 
-#[derive(Debug, Eq, Hash)]
-struct SodokuClass {
+struct Sodoku {
+    rows: HashSet<usize>,
+    columns: HashSet<usize>,
+    areas: HashSet<usize>,
+}
+
+impl Sodoku {
+    fn new(SodokuElement { row, column, area }: SodokuElement) -> Self {
+        let mut rows = HashSet::with_capacity(9);
+        let mut columns = HashSet::with_capacity(9);
+        let mut areas = HashSet::with_capacity(9);
+
+        rows.insert(row);
+        columns.insert(column);
+        areas.insert(area);
+
+        Self {
+            rows,
+            columns,
+            areas,
+        }
+    }
+
+    fn exists(&mut self, SodokuElement { row, column, area }: SodokuElement) -> bool {
+        let rows = self.rows.insert(row);
+        let columns = self.columns.insert(column);
+        let areas = self.areas.insert(area);
+        !rows || !columns || !areas
+    }
+}
+
+struct SodokuElement {
     row: usize,
     column: usize,
     area: usize,
-    char: char,
 }
 
-impl PartialEq for SodokuClass {
-    fn eq(&self, other: &Self) -> bool {
-        self.char == other.char
-            && (self.column == other.column || self.row == other.row || self.area == other.area)
-    }
-}
-
-impl SodokuClass {
-    fn from(char: char, index: usize) -> Self {
-        let column = index % 9;
-        let row = (index - column) / 9;
+impl SodokuElement {
+    fn from(row: usize, column: usize) -> Self {
         let area = match (row, column) {
-            (0..=2, 0..=2) => 1,
-            (3..=5, 3..=5) => 2,
-            (6..=9, 6..=8) => 3,
-            (0..=2, 3..=5) => 4,
-            (0..=2, 6..=8) => 5,
-            (3..=5, 0..=2) => 6,
-            (3..=5, 6..=8) => 7,
-            (6..=9, 0..=2) => 8,
-            (6..=9, 3..=5) => 9,
+            (0..=2, 0..=2) => 0,
+            (0..=2, 3..=5) => 1,
+            (0..=2, 6..=8) => 2,
+            (3..=5, 0..=2) => 3,
+            (3..=5, 3..=5) => 4,
+            (3..=5, 6..=8) => 5,
+            (6..=8, 0..=2) => 6,
+            (6..=8, 3..=5) => 7,
+            (6..=8, 6..=8) => 8,
             _ => unreachable!(),
         };
 
-        Self {
-            row,
-            column,
-            area,
-            char,
-        }
+        Self { row, column, area }
     }
 }
 
@@ -179,7 +211,8 @@ impl ProductExeceptSelfState {
 
 #[cfg(test)]
 mod tests {
-    use crate::{arrays_and_hashing::SodokuClass, Solution};
+
+    use crate::Solution;
 
     #[test]
     pub fn contains_duplicate() {
@@ -286,19 +319,13 @@ mod tests {
     }
     #[test]
     pub fn is_valid_sodoku() {
-        assert_eq!(SodokuClass::from('a', 2), SodokuClass::from('a', 11)); //same column
-        assert_eq!(SodokuClass::from('a', 2), SodokuClass::from('a', 7)); //same row
-        assert_eq!(SodokuClass::from('a', 2), SodokuClass::from('a', 20)); //same area
-
-        assert_ne!(SodokuClass::from('a', 2), SodokuClass::from('a', 15)); //different rwo,column,area
-
         assert!(Solution::is_valid_sodoku(vec![
             vec!['5', '3', '.', '.', '7', '.', '.', '.', '.'],
             vec!['6', '.', '.', '1', '9', '5', '.', '.', '.'],
             vec!['.', '9', '8', '.', '.', '.', '.', '6', '.'],
             vec!['8', '.', '.', '.', '6', '.', '.', '.', '3'],
-            vec!['4', '.', '.', '8', '.', '3', '.', '.', '1'],
-            vec!['7', '.', '.', '.', '2', '.', '.', '.', '6'],
+            vec!['4', '.', '.', '8', '.', '.', '.', '.', '1'],
+            vec!['7', '.', '.', '.', '2', '.', '.', '.', '.'],
             vec!['.', '6', '.', '.', '.', '.', '2', '8', '.'],
             vec!['.', '.', '.', '4', '1', '9', '.', '.', '5'],
             vec!['.', '.', '.', '.', '8', '.', '.', '7', '9'],
