@@ -70,6 +70,23 @@ pub fn decode(string: String) -> Vec<String> {
     string.split('#').map(|x| x.to_string()).collect()
 }
 
+pub fn longest_consecutive(nums: Vec<i32>) -> i32 {
+    if nums.is_empty() {
+        return 0;
+    }
+    let nums = nums.into_iter().collect::<HashSet<_>>();
+    let mut max = 0;
+    for num in nums.iter() {
+        if !nums.contains(&(num - 1)) {
+            let count = ((num + 1)..).take_while(|x| nums.contains(x)).count() + 1;
+            if count > max {
+                max = count;
+            }
+        }
+    }
+    max as i32
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -149,5 +166,10 @@ mod tests {
             "solving".to_string(),
         ];
         assert_eq!(decode(encode(&strings)), strings)
+    }
+    #[test]
+    pub fn longest_consecutive_test() {
+        assert_eq!(longest_consecutive(vec![100, 4, 200, 1, 3, 2]), 4);
+        assert_eq!(longest_consecutive(vec![0, 3, 7, 2, 5, 8, 4, 6, 0, 1]), 9);
     }
 }
